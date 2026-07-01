@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SegmentDriveApp</string>
+    <string name="start_recording">Start recording</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="authorize_drive">Authorize Drive</string>
+    <string name="idle">Idle</string>
+</resources>
