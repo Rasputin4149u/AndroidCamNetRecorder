@@ -31,6 +31,9 @@ object AppLogger {
             LogFile.createNewFile()
         }
 
+		Log.d("AppLogger.kt", "In Init App Logger")
+		Log.d("AppLogger.kt", context)
+		File(LogFilePath).appendText("We Reached AppLogger.kt")
         d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
     }
 
