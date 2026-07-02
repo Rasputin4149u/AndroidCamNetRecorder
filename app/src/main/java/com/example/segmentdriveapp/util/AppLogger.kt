@@ -30,7 +30,6 @@ object AppLogger {
         if (!LogFile.exists()) {
             LogFile.createNewFile()
         }
-
 		Log.d("AppLogger.kt", "In Init App Logger")
 		Log.d("AppLogger.kt", context)
 		File(LogFilePath).appendText("We Reached AppLogger.kt")
