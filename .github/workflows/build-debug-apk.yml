@@ -1,5 +1,21 @@
 name: Build Debug APK
 
+- name: Build debug APK
+  run: gradle :app:assembleDebug --no-daemon --stacktrace --warning-mode all
+
+- name: Print APK signing cert
+  if: success()
+  run: |
+    keytool -printcert -jarfile app/build/outputs/apk/debug/app-debug.apk
+
+- name: Upload debug APK
+  if: success()
+  uses: actions/upload-artifact@v6
+  with:
+    name: app-debug-apk
+    path: app/build/outputs/apk/debug/*.apk
+    if-no-files-found: error
+
 on:
   push:
     branches:
