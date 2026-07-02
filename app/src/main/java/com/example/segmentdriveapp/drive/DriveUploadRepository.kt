@@ -1,6 +1,8 @@
 package com.example.segmentdriveapp.drive
 
 import android.content.Context
+import com.example.segmentdriveapp.BuildConfig
+import com.example.segmentdriveapp.util.AppLogger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -11,59 +13,130 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.File
-import com.example.segmentdriveapp.BuildConfig
-import com.example.segmentdriveapp.util.AppLogger
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DriveUploadRepository private constructor(private val context: Context) {
     private val client = OkHttpClient.Builder().build()
 
     fun uploadFile(accessToken: String, file: File, mimeType: String = "video/mp4"): UploadResult {
-        AppLogger.d(TAG, "Starting Drive resumable upload file=[${file.absolutePath}] size=[${file.length()}]")
-        val sessionUri = startResumableSession(accessToken, file, mimeType)
-        val putRequest = Request.Builder()
-            .url(sessionUri)
+        val CloudDir = BuildConfig.DRIVE_FOLDER_ID
+        val FileName = file.name
+        val FilePath = file.absolutePath
+        val FileSizeBytes = file.length()
+        val FileExtensionName = file.extension
+        val FileCreatedAtText = SimpleDateFormat(
+            "[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]",
+            Locale.US
+        ).format(Date(file.lastModified()))
+
+        AppLogger.d(
+            TAG,
+            "uploadFile | input accessToken=[$accessToken] cloud_dir=[$CloudDir] fileName=[$FileName] filePath=[$FilePath] fileSizeBytes=[$FileSizeBytes] fileExtensionName=[$FileExtensionName] fileCreatedAt=[$FileCreatedAtText] mimeType=[$mimeType]"
+        )
+
+        val SessionUri = startResumableSession(accessToken, file, mimeType)
+        AppLogger.d(TAG, "uploadFile | output startResumableSession sessionUri=[$SessionUri]")
+
+        val PutRequestObject = Request.Builder()
+            .url(SessionUri)
             .put(file.asRequestBody(mimeType.toMediaType()))
             .header("Authorization", "Bearer $accessToken")
             .header("Content-Type", mimeType)
             .build()
 
-        client.newCall(putRequest).execute().use { response ->
-            if (!response.isSuccessful) {
-                AppLogger.e(TAG, "Upload PUT failed code=[${response.code}] body=[${response.body?.string()}]")
-                throw IllegalStateException("Drive upload failed with HTTP ${response.code}")
+        AppLogger.d(
+            TAG,
+            "uploadFile | output OkHttp PUT request built url=[$SessionUri] authorizationHeader=[Bearer $accessToken] contentType=[$mimeType]"
+        )
+
+        client.newCall(PutRequestObject).execute().use { PutResponseObject ->
+            val PutResponseCode = PutResponseObject.code
+            val PutResponseBody = PutResponseObject.body?.string().orEmpty()
+
+            AppLogger.d(
+                TAG,
+                "uploadFile | output OkHttp PUT response code=[$PutResponseCode] body=[$PutResponseBody]"
+            )
+
+            if (!PutResponseObject.isSuccessful) {
+                AppLogger.e(
+                    TAG,
+                    "uploadFile | PUT failed code=[$PutResponseCode] body=[$PutResponseBody]"
+                )
+                throw IllegalStateException("Drive upload failed with HTTP $PutResponseCode")
             }
-            val body = response.body?.string().orEmpty()
-            val fileId = JSONObject(body).optString("id")
-            AppLogger.d(TAG, "Drive upload completed fileId=[$fileId]")
-            return UploadResult(fileId = fileId, sessionUri = sessionUri)
+
+            val DriveFileId = JSONObject(PutResponseBody).optString("id")
+            AppLogger.d(TAG, "uploadFile | output parsed driveFileId=[$DriveFileId]")
+            return UploadResult(fileId = DriveFileId, sessionUri = SessionUri)
         }
     }
 
     private fun startResumableSession(accessToken: String, file: File, mimeType: String): String {
-        val metadata = DriveFileMetadata(
-            name = file.name,
-            parents = listOf(BuildConfig.DRIVE_FOLDER_ID)
+        val CloudDir = BuildConfig.DRIVE_FOLDER_ID
+        val FileName = file.name
+        val FilePath = file.absolutePath
+        val FileSizeBytes = file.length()
+        val FileExtensionName = file.extension
+        val FileCreatedAtText = SimpleDateFormat(
+            "[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]",
+            Locale.US
+        ).format(Date(file.lastModified()))
+
+        AppLogger.d(
+            TAG,
+            "startResumableSession | input accessToken=[$accessToken] cloud_dir=[$CloudDir] fileName=[$FileName] filePath=[$FilePath] fileSizeBytes=[$FileSizeBytes] fileExtensionName=[$FileExtensionName] fileCreatedAt=[$FileCreatedAtText] mimeType=[$mimeType]"
         )
-        val request = Request.Builder()
+
+        val MetadataObject = DriveFileMetadata(
+            name = file.name,
+            parents = listOf(CloudDir)
+        )
+        val MetadataJson = Json.encodeToString(MetadataObject)
+
+        AppLogger.d(TAG, "startResumableSession | input metadataJson=[$MetadataJson]")
+
+        val SessionStartRequestObject = Request.Builder()
             .url("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable")
-            .post(Json.encodeToString(metadata).toRequestBody("application/json; charset=utf-8".toMediaType()))
+            .post(MetadataJson.toRequestBody("application/json; charset=utf-8".toMediaType()))
             .header("Authorization", "Bearer $accessToken")
             .header("Content-Type", "application/json; charset=utf-8")
             .header("X-Upload-Content-Type", mimeType)
             .header("X-Upload-Content-Length", file.length().toString())
             .build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                AppLogger.e(TAG, "Resumable session start failed code=[${response.code}] body=[${response.body?.string()}]")
-                throw IllegalStateException("Failed to start Drive resumable upload: HTTP ${response.code}")
+        AppLogger.d(
+            TAG,
+            "startResumableSession | output OkHttp POST request built url=[https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable] authorizationHeader=[Bearer $accessToken] xUploadContentType=[$mimeType] xUploadContentLength=[${file.length()}]"
+        )
+
+        client.newCall(SessionStartRequestObject).execute().use { SessionStartResponseObject ->
+            val SessionStartResponseCode = SessionStartResponseObject.code
+            val SessionStartResponseBody = SessionStartResponseObject.body?.string().orEmpty()
+            val SessionLocation = SessionStartResponseObject.header("Location")
+
+            AppLogger.d(
+                TAG,
+                "startResumableSession | output OkHttp POST response code=[$SessionStartResponseCode] body=[$SessionStartResponseBody] location=[$SessionLocation]"
+            )
+
+            if (!SessionStartResponseObject.isSuccessful) {
+                AppLogger.e(
+                    TAG,
+                    "startResumableSession | POST failed code=[$SessionStartResponseCode] body=[$SessionStartResponseBody]"
+                )
+                throw IllegalStateException("Failed to start Drive resumable upload: HTTP $SessionStartResponseCode")
             }
-            val location = response.header("Location")
-            if (location.isNullOrBlank()) {
+
+            if (SessionLocation.isNullOrBlank()) {
+                AppLogger.e(TAG, "startResumableSession | location header missing after successful POST")
                 throw IllegalStateException("Drive resumable upload did not return a session URI")
             }
-            AppLogger.d(TAG, "Received Drive resumable session URI")
-            return location
+
+            AppLogger.d(TAG, "startResumableSession | output sessionUri=[$SessionLocation]")
+            return SessionLocation
         }
     }
 
