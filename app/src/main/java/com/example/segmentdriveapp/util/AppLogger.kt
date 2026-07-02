@@ -19,7 +19,7 @@ object AppLogger {
     private val fileGuard = Any()
 
     fun Initialize(context: Context) {
-        val DocumentsFolder = File(context.filesDir, "Documents")
+        val DocumentsFolder = File(context.filesDir, "CamSOS")
         if (!DocumentsFolder.exists()) {
             DocumentsFolder.mkdirs()
         }
