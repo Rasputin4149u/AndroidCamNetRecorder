@@ -16,7 +16,9 @@ class DriveAuthManager(private val context: Context) {
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     init {
-        AppLogger.Initialize(context)
+        Log.d("DriveAuthManager", "Before Init App Logger")
+		Log.d("DriveAuthManager", context)
+		AppLogger.Initialize(context)
         AppLogger.d(TAG, "init | AppLogger initialized for DriveAuthManager")
     }
 
