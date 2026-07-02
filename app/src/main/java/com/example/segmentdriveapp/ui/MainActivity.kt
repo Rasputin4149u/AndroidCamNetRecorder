@@ -15,6 +15,8 @@ import com.example.segmentdriveapp.util.AppLogger
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyBottomInsets()
         AppLogger.d(TAG, "onCreate | activity created")
 
         driveAuthManager = DriveAuthManager(this)
@@ -115,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && captureCoordinator.isRecording) {
             AppLogger.d(TAG, "onKeyUp | Volume Up intercepted as Stop trigger")
             appendStatus("Volume Up pressed -> stopping recording")
@@ -124,6 +127,26 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return super.onKeyUp(keyCode, event)
+    }
+
+    private fun applyBottomInsets() {
+        val originalLeft = binding.buttonRow.paddingLeft
+        val originalTop = binding.buttonRow.paddingTop
+        val originalRight = binding.buttonRow.paddingRight
+        val originalBottom = binding.buttonRow.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.buttonRow) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                originalLeft,
+                originalTop,
+                originalRight,
+                originalBottom + systemBars.bottom
+            )
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(binding.buttonRow)
     }
 
     private fun requestMissingPermissionsIfNeeded() {
