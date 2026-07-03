@@ -13,20 +13,13 @@ object AppLogger {
     const val LogFileName = "Cam_SOS_Recorder.log"
 
     @Volatile
-    private var LogFilePath: String = ""
+    private var LogFilePath: String = "/CamSOS/Cam_SOS_Recorder.log"
 
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
 
     fun Initialize(context: Context) {
-        val DocumentsFolder = File(context.filesDir, "CamSOS")
-        if (!DocumentsFolder.exists()) {
-            DocumentsFolder.mkdirs()
-        }
-
-        val LogFile = File(DocumentsFolder, LogFileName)
-        LogFilePath = LogFile.absolutePath
-
+        
         if (!LogFile.exists()) {
             LogFile.createNewFile()
         }
