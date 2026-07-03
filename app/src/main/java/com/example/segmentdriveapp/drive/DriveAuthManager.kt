@@ -19,9 +19,7 @@ class DriveAuthManager(private val context: Context) {
     init {
         Log.d("DriveAuthManager", "Before Init App Logger")
 		Log.d("DriveAuthManager", "obj=[${context?.toString() ?: "null"}]")
-		AppLogger.Initialize(context)
-        AppLogger.d(TAG, "init | AppLogger initialized for DriveAuthManager")
-    }
+	}
 
     fun authorize(
         activity: Activity,

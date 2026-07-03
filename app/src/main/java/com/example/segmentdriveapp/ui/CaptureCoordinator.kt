@@ -51,6 +51,14 @@ class CaptureCoordinator(
 
     val isCameraReady: Boolean
         get() = isCameraBound
+	private var ProjectFolder: File? = null
+
+	private fun GetProjectFolder(): File {
+		if (ProjectFolder == null) {
+			ProjectFolder = AppLogger.Initialize(context.applicationContext)
+		}
+		return ProjectFolder!!
+	}
 
     suspend fun bindCamera() {
         AppLogger.d(TAG, "bindCamera | entering")
@@ -236,9 +244,9 @@ class CaptureCoordinator(
     }
 
     private fun nextSegmentFile(index: Int): File {
-        val dir = File(context.filesDir, "segments").apply { mkdirs() }
-        return File(dir, "${sessionId}_segment_${index.toString().padStart(3, '0')}.mp4")
-    }
+		val ProjectFolder = GetProjectFolder()
+		return File(ProjectFolder, "${sessionId}_segment_${index.toString().padStart(3, '0')}.mp4")
+	}
 
     private data class ActiveSegmentHandle(
         val dbId: Long,

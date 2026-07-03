@@ -6,7 +6,13 @@ import com.example.segmentdriveapp.util.AppLogger
 import java.io.File
 
 class SegmentRepository private constructor(context: Context) {
-    private val dao = AppDatabase.get(context).segmentDao()
+    private val AppContext = context.applicationContext
+    private val dao = AppDatabase.get(AppContext).segmentDao()
+    private val ProjectFolder = AppLogger.Initialize(AppContext)
+
+    init {
+        AppLogger.d(TAG, "init | AppLogger initialized for SegmentRepository projectFolder=[${ProjectFolder.absolutePath}]")
+    }
 
     suspend fun createActiveSegment(
         sessionId: String,

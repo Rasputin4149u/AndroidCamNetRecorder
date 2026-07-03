@@ -8,6 +8,8 @@ import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.os.Environment
+
 
 object AppLogger {
     const val LogFileName = "Cam_SOS_Recorder.log"
@@ -18,41 +20,32 @@ object AppLogger {
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
 
-    fun InitiateLogFile(){
+    fun InitiateLogFile(ProjectFolder: File) {
 		
-		val LogFile = File("/CamSOS", LogFileName)
+		val LogFile = File(ProjectFolder, LogFileName)
 		LogFilePath = LogFile.absolutePath
+
 		if (!LogFile.exists()) {
-            LogFile.createNewFile()
-        }
+			LogFile.createNewFile()
+		}
 	}
 	
-	fun Initialize(context: Context) {
-        
-        InitiateLogFile()
-		Log.d("AppLogger.kt", "In Init App Logger")
-		
-		Log.d("AppLogger.kt", "obj=[${context?.toString() ?: "null"}]")
-		Log.d("AppLogger.kt", LogFilePath)
-		FileWrite("We Reached AppLogger.kt" + System.lineSeparator())
-		d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
-    }
+	fun Initialize(context: Context): File {
+		val ProjectFolder = File(Environment.getExternalStorageDirectory(), "CamSOS")
+
+		if (!ProjectFolder.exists()) {
+			ProjectFolder.mkdirs()
+		}
+
+		InitiateLogFile(ProjectFolder)
+		d("AppLogger", "Logger initialized logFilePath=[$LogFilePath] projectFolder=[${ProjectFolder.absolutePath}]")
+		return ProjectFolder
+	}
 
     fun GetLogFilePath(): String {
         return LogFilePath
     }
-	
-	fun FileWrite(message: String) {
-		try {
-			File(LogFilePath).appendText(message)
-			val Message = "write:" + message + " path=[$LogFilePath] -------Pass"
-			Log.d("AppLogger", Message)
-		} catch (AppendMarkerWriteError: Throwable) {
-			val Message = "write:" + message + " path=[$LogFilePath] -------Fail"
-			Log.e("AppLogger", Message, AppendMarkerWriteError)
-		}
-	}
-	
+
     fun d(tag: String, message: String) {
         val LogLine = BuildLogLine("DEBUG", message)
         Log.d(tag, LogLine)
@@ -88,15 +81,14 @@ object AppLogger {
     }
 
     private fun AppendToFile(logLine: String) {
-        InitiateLogFile()
-		synchronized(fileGuard) {
-            
-			try {
+        synchronized(fileGuard) {
+            try {
                 if (LogFilePath.isBlank()) {
                     Log.e("AppLogger", "Log file path is blank; skipping file append")
                     return
                 }
-				FileWrite(logLine + System.lineSeparator())
+
+                File(LogFilePath).appendText(logLine + System.lineSeparator())
             } catch (AppendError: Throwable) {
                 Log.e("AppLogger", "Failed to append to log file", AppendError)
             }

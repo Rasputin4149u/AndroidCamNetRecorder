@@ -17,6 +17,10 @@ import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import android.provider.Settings
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -45,7 +49,20 @@ class MainActivity : AppCompatActivity() {
             appendStatus("Drive authorization failed: ${e.message}")
         }
     }
+	
+	private fun EnsureAllFilesAccess() {
+		if (Environment.isExternalStorageManager()) {
+			return
+		}
 
+		val ManageFilesIntent = Intent(
+			Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+			Uri.parse("package:$packageName")
+		)
+
+		startActivity(ManageFilesIntent)
+	}
+	
     private val permissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
@@ -64,7 +81,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        
+		EnsureAllFilesAccess()
+		enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         applyBottomInsets()
