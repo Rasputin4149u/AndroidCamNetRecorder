@@ -27,19 +27,23 @@ object AppLogger {
 		
 		Log.d("AppLogger.kt", "obj=[${context?.toString() ?: "null"}]")
 		Log.d("AppLogger.kt", LogFilePath)
-		try {
-			File(LogFilePath).appendText("We Reached AppLogger.kt" + System.lineSeparator())
-			Log.d("AppLogger.kt", "File(LogFilePath).appendText(We Reached AppLogger.kt)------Success")
-		} catch (AppendMarkerWriteError: Throwable) {
-			Log.e("AppLogger","Initialize | failed to write direct marker path=[$LogFilePath]",	AppendMarkerWriteError )
-		}
+		FileWrite("We Reached AppLogger.kt" + System.lineSeparator())
 		d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
     }
 
     fun GetLogFilePath(): String {
         return LogFilePath
     }
-
+	fun FileWrite (message: String){
+		
+		try {
+			File(LogFilePath).appendText(message)
+			Log.d("AppLogger.kt", "write:"+  message + "path="[$LogFilePath] + "-------Pass")
+		} catch (AppendMarkerWriteError: Throwable) {
+			Log.e("AppLogger","write:"+ message + "path="[$LogFilePath] + "-------Fail",AppendMarkerWriteError )
+		}
+	}
+	
     fun d(tag: String, message: String) {
         val LogLine = BuildLogLine("DEBUG", message)
         Log.d(tag, LogLine)
@@ -75,18 +79,13 @@ object AppLogger {
     }
 
     private fun AppendToFile(logLine: String) {
-        if (!LogFilePath.exists()) {
-            LogFilePath.createNewFile()
-        }
-
-		synchronized(fileGuard) {
+        synchronized(fileGuard) {
             try {
                 if (LogFilePath.isBlank()) {
                     Log.e("AppLogger", "Log file path is blank; skipping file append")
                     return
                 }
-
-                File(LogFilePath).appendText(logLine + System.lineSeparator())
+				FileWrite(logLine + System.lineSeparator())
             } catch (AppendError: Throwable) {
                 Log.e("AppLogger", "Failed to append to log file", AppendError)
             }
