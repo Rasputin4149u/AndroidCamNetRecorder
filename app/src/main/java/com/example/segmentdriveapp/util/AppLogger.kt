@@ -14,6 +14,9 @@ object AppLogger {
 
     @Volatile
     private var LogFilePath: String = "/CamSOS/Cam_SOS_Recorder.log"
+	if (!LogFile.exists()) {
+            LogFile.createNewFile()
+        }
 
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
