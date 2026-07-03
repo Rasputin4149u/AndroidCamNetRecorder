@@ -39,13 +39,11 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace --warning-mode all
 
-      - name: Get APK SHA-1 Fingerprint
-        run: |
-          keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep SHA1
-
+      
       - name: Extract SHA-1 from Keystore
         run: |
-          keytool -list -v -keystore path/to/your/keystore.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep SHA1
+            keytool -list -v -keystore path/to/your/keystore.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep SHA1
+      
       - name: Upload debug APK
         if: success()
         uses: actions/upload-artifact@v6
@@ -53,7 +51,9 @@ jobs:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-
+      - name: Get APK SHA-1 via apksigner
+          run: |
+            $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk | grep SHA-1
       - name: Upload build reports
         if: always()
         uses: actions/upload-artifact@v6
