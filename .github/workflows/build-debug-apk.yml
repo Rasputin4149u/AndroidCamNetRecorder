@@ -14,16 +14,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
           cache: gradle
-        - name: Get APK SHA-1 Fingerprint
-        run: |
-         keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep SHA1
-      
+
       - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v5
         with:
@@ -39,11 +37,22 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace --warning-mode all
 
-      
-      - name: Extract SHA-1 from Keystore
+      - name: Get debug APK SHA-1 fingerprint
         run: |
-            keytool -list -v -keystore path/to/your/keystore.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep SHA1
-      
+          APK_PATH="$(find app/build/outputs/apk/debug -type f -name '*.apk' | head -n 1)"
+
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::No debug APK found under app/build/outputs/apk/debug"
+            exit 1
+          fi
+
+          echo "APK_PATH=$APK_PATH"
+
+          if ! keytool -printcert -jarfile "$APK_PATH" | grep -E "SHA1|SHA-1"; then
+            echo "::error::Failed to extract SHA-1 fingerprint from $APK_PATH"
+            exit 1
+          fi
+
       - name: Upload debug APK
         if: success()
         uses: actions/upload-artifact@v6
@@ -51,8 +60,8 @@ jobs:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-    
-     - name: Upload build reports
+
+      - name: Upload build reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
