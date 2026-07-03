@@ -13,18 +13,15 @@ object AppLogger {
     const val LogFileName = "Cam_SOS_Recorder.log"
 
     @Volatile
-    private var LogFilePath: String = "/CamSOS/Cam_SOS_Recorder.log"
-	if (!LogFile.exists()) {
-            LogFile.createNewFile()
-        }
-
+    private var LogFilePath = "/CamSOS/Cam_SOS_Recorder.log"
+	
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
 
     fun Initialize(context: Context) {
         
-        if (!LogFile.exists()) {
-            LogFile.createNewFile()
+        if (!LogFilePath.exists()) {
+            LogFilePath.createNewFile()
         }
 		Log.d("AppLogger.kt", "In Init App Logger")
 		
@@ -78,7 +75,11 @@ object AppLogger {
     }
 
     private fun AppendToFile(logLine: String) {
-        synchronized(fileGuard) {
+        if (!LogFilePath.exists()) {
+            LogFilePath.createNewFile()
+        }
+
+		synchronized(fileGuard) {
             try {
                 if (LogFilePath.isBlank()) {
                     Log.e("AppLogger", "Log file path is blank; skipping file append")
