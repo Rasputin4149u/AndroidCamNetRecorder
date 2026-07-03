@@ -38,9 +38,9 @@ object AppLogger {
 		
 		try {
 			File(LogFilePath).appendText(message)
-			Log.d("AppLogger.kt", "write:" +  message + "path=" + [$LogFilePath] + "-------Pass")
+			Log.d("AppLogger", "write:" +  message + "path=" + [$LogFilePath] + "-------Pass")
 		} catch (AppendMarkerWriteError: Throwable) {
-			Log.e("AppLogger","write:"+ message + "path="[$LogFilePath] + "-------Fail",AppendMarkerWriteError )
+			Log.e("AppLogger","write:"+ message + "path="[$LogFilePath] + "-------Fail"; AppendMarkerWriteError )
 		}
 	}
 	
