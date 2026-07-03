@@ -36,12 +36,9 @@ object AppLogger {
 		Log.d("AppLogger.kt", LogFilePath)
 		try {
 			File(LogFilePath).appendText("We Reached AppLogger.kt" + System.lineSeparator())
+			Log.d("AppLogger.kt", "File(LogFilePath).appendText(We Reached AppLogger.kt)------Success")
 		} catch (AppendMarkerWriteError: Throwable) {
-			Log.e(
-				"AppLogger",
-				"Initialize | failed to write direct marker path=[$LogFilePath]",
-				AppendMarkerWriteError
-			)
+			Log.e("AppLogger","Initialize | failed to write direct marker path=[$LogFilePath]",	AppendMarkerWriteError )
 		}
 		d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
     }
