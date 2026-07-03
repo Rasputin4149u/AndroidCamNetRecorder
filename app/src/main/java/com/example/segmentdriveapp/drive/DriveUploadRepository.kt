@@ -90,10 +90,17 @@ class DriveUploadRepository private constructor(private val context: Context) {
             "startResumableSession | input accessToken=[$accessToken] cloud_dir=[$CloudDir] fileName=[$FileName] filePath=[$FilePath] fileSizeBytes=[$FileSizeBytes] fileExtensionName=[$FileExtensionName] fileCreatedAt=[$FileCreatedAtText] mimeType=[$mimeType]"
         )
 
-        val MetadataObject = DriveFileMetadata(
-            name = file.name,
-            parents = listOf(CloudDir)
-        )
+        val MetadataObject = if (CloudDir.isBlank()) {
+			DriveFileMetadata(
+				name = file.name,
+				parents = emptyList()
+			)
+		} else {
+			DriveFileMetadata(
+				name = file.name,
+				parents = listOf(CloudDir)
+			)
+		}
         val MetadataJson = Json.encodeToString(MetadataObject)
 
         AppLogger.d(TAG, "startResumableSession | input metadataJson=[$MetadataJson]")
