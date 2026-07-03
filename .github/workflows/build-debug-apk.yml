@@ -39,10 +39,10 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace --warning-mode all
 
-      - name: Print APK signing cert
-        if: success()
+      - name: Get APK SHA-1 Fingerprint
         run: |
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs --verbose app/build/outputs/apk/debug/app-debug.apk
+          keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep SHA1
+
       - name: Extract SHA-1 from Keystore
         run: |
           keytool -list -v -keystore path/to/your/keystore.jks -alias ${{ secrets.KEY_ALIAS }} -storepass ${{ secrets.KEYSTORE_PASSWORD }} | grep SHA1
