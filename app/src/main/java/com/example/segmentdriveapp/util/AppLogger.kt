@@ -11,18 +11,25 @@ import java.util.Locale
 
 object AppLogger {
     const val LogFileName = "Cam_SOS_Recorder.log"
-
+		
     @Volatile
-    private var LogFilePath = "/CamSOS/Cam_SOS_Recorder.log"
+    
+	private var LogFilePath: String = ""
 	
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
 
-    fun Initialize(context: Context) {
-        
-        if (!LogFilePath.exists()) {
-            LogFilePath.createNewFile()
+    fun InitiateLogFile{
+		
+		val LogFile = File("/CamSOS", LogFileName)
+		LogFilePath = LogFile.absolutePath
+		if (!LogFile.exists()) {
+            LogFile.createNewFile()
         }
+	}
+	fun Initialize(context: Context) {
+        
+        InitiateLogFile
 		Log.d("AppLogger.kt", "In Init App Logger")
 		
 		Log.d("AppLogger.kt", "obj=[${context?.toString() ?: "null"}]")
@@ -81,8 +88,10 @@ object AppLogger {
     }
 
     private fun AppendToFile(logLine: String) {
-        synchronized(fileGuard) {
-            try {
+        InitiateLogFile
+		synchronized(fileGuard) {
+            
+			try {
                 if (LogFilePath.isBlank()) {
                     Log.e("AppLogger", "Log file path is blank; skipping file append")
                     return
