@@ -34,13 +34,15 @@ object AppLogger {
     fun GetLogFilePath(): String {
         return LogFilePath
     }
-	fun FileWrite (message: String){
-		
+	
+	fun FileWrite(message: String) {
 		try {
 			File(LogFilePath).appendText(message)
-			Log.d("AppLogger", "write:" +  message + "path=" + [$LogFilePath] + "-------Pass")
+			val Message = "write:" + message + " path=[$LogFilePath] -------Pass"
+			Log.d("AppLogger", Message)
 		} catch (AppendMarkerWriteError: Throwable) {
-			Log.e("AppLogger","write:"+ message + "path="[$LogFilePath] + "-------Fail"; AppendMarkerWriteError )
+			val Message = "write:" + message + " path=[$LogFilePath] -------Fail"
+			Log.e("AppLogger", Message, AppendMarkerWriteError)
 		}
 	}
 	
