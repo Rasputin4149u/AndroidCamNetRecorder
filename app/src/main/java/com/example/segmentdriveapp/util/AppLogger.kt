@@ -31,10 +31,19 @@ object AppLogger {
             LogFile.createNewFile()
         }
 		Log.d("AppLogger.kt", "In Init App Logger")
-		Log.d("AppLogger.kt", context)
+		
+		Log.d("AppLogger.kt", "obj=[${context?.toString() ?: "null"}]")
 		Log.d("AppLogger.kt", LogFilePath)
-		File(LogFilePath).appendText("We Reached AppLogger.kt")
-        d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
+		try {
+			File(LogFilePath).appendText("We Reached AppLogger.kt" + System.lineSeparator())
+		} catch (AppendMarkerWriteError: Throwable) {
+			Log.e(
+				"AppLogger",
+				"Initialize | failed to write direct marker path=[$LogFilePath]",
+				AppendMarkerWriteError
+			)
+		}
+		d("AppLogger", "Logger initialized logFilePath=[$LogFilePath]")
     }
 
     fun GetLogFilePath(): String {
