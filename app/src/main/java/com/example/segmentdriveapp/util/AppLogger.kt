@@ -11,15 +11,14 @@ import java.util.Locale
 
 object AppLogger {
     const val LogFileName = "Cam_SOS_Recorder.log"
-		
+
     @Volatile
-    
-	private var LogFilePath: String = ""
-	
+    private var LogFilePath: String = ""
+
     private val tsFormat = SimpleDateFormat("[dd]:[MM]:[yyyy] - [HH]:[mm]:[ss].[SSS]", Locale.US)
     private val fileGuard = Any()
 
-    fun InitiateLogFile{
+    fun InitiateLogFile(){
 		
 		val LogFile = File("/CamSOS", LogFileName)
 		LogFilePath = LogFile.absolutePath
@@ -27,9 +26,10 @@ object AppLogger {
             LogFile.createNewFile()
         }
 	}
+	
 	fun Initialize(context: Context) {
         
-        InitiateLogFile
+        InitiateLogFile()
 		Log.d("AppLogger.kt", "In Init App Logger")
 		
 		Log.d("AppLogger.kt", "obj=[${context?.toString() ?: "null"}]")
@@ -88,7 +88,7 @@ object AppLogger {
     }
 
     private fun AppendToFile(logLine: String) {
-        InitiateLogFile
+        InitiateLogFile()
 		synchronized(fileGuard) {
             
 			try {
