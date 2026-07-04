@@ -18,7 +18,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val driveFolderId = providers.environmentVariable("DRIVE_FOLDER_ID").orNull
-            ?: "PUT_FIXED_DRIVE_FOLDER_ID_HERE"
+            ?: "1nD_GTjOQ9ae4aPqb7575l7PCcUEO0-c0"
         buildConfigField("String", "DRIVE_FOLDER_ID", "\"${driveFolderId}\"")
         buildConfigField("String", "DRIVE_SCOPE", "\"https://www.googleapis.com/auth/drive.file\"")
     }
