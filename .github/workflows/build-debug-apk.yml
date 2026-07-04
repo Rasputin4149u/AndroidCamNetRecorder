@@ -48,8 +48,29 @@ jobs:
 
           echo "APK_PATH=$APK_PATH"
 
-          if ! keytool -printcert -jarfile "$APK_PATH" | grep -E "SHA1|SHA-1"; then
-            echo "::error::Failed to extract SHA-1 fingerprint from $APK_PATH"
+          APKSIGNER_PATH="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+
+          if [ ! -x "$APKSIGNER_PATH" ]; then
+            APKSIGNER_PATH="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          fi
+
+          if [ -z "$APKSIGNER_PATH" ] || [ ! -x "$APKSIGNER_PATH" ]; then
+            echo "::error::apksigner was not found under ANDROID_HOME/build-tools"
+            exit 1
+          fi
+
+          echo "APKSIGNER_PATH=$APKSIGNER_PATH"
+
+          if ! CERT_OUTPUT="$($APKSIGNER_PATH verify --print-certs "$APK_PATH" 2>&1)"; then
+            echo "$CERT_OUTPUT"
+            echo "::error::apksigner failed to verify $APK_PATH"
+            exit 1
+          fi
+
+          echo "$CERT_OUTPUT"
+
+          if ! echo "$CERT_OUTPUT" | grep -Eiq "SHA-1 digest|SHA1|SHA-1"; then
+            echo "::error::SHA-1 certificate fingerprint was not found in apksigner output"
             exit 1
           fi
 
